@@ -1,30 +1,32 @@
 import { supabase } from './supabase';
 
 export const authService = {
-  // Mock Google Sign-In for testing (replace with real implementation later)
-  async signInWithGoogle() {
+  // Sign up with email and password
+  async signUpWithEmail(email: string, password: string) {
     try {
-      // For now, create a mock user for testing
-      const mockUser = {
-        id: 'mock-user-id',
-        email: 'test@example.com',
-        name: 'Test User'
-      };
-      
-      // Simulate successful authentication
-      return { 
-        data: { user: mockUser }, 
-        error: null 
-      };
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+      });
+      return { data, error };
     } catch (error) {
-      console.error('Mock Google Sign-In Error:', error);
+      console.error('Email sign up error:', error);
       return { data: null, error };
     }
   },
 
-  // Sign up with Google (same as sign in for OAuth)
-  async signUpWithGoogle() {
-    return this.signInWithGoogle();
+  // Sign in with email and password
+  async signInWithEmail(email: string, password: string) {
+    try {
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+      return { data, error };
+    } catch (error) {
+      console.error('Email sign in error:', error);
+      return { data: null, error };
+    }
   },
 
   // Sign out
@@ -43,17 +45,6 @@ export const authService = {
   async getCurrentUser() {
     try {
       const { data: { user }, error } = await supabase.auth.getUser();
-      // Return mock user if no real user
-      if (!user) {
-        return { 
-          user: { 
-            id: 'mock-user-id', 
-            email: 'test@example.com',
-            name: 'Test User'
-          }, 
-          error: null 
-        };
-      }
       return { user, error };
     } catch (error) {
       console.error('Get current user error:', error);
