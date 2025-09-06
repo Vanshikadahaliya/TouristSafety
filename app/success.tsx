@@ -2,14 +2,16 @@ import * as Location from 'expo-location';
 import { router } from 'expo-router';
 import { useEffect, useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  Platform,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    Dimensions,
+    Platform,
+    SafeAreaView,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { authService } from '../lib/authService';
 import { locationSharingService, SharedLocation } from '../lib/locationSharingService';
@@ -256,134 +258,141 @@ export default function MapScreen() {
     );
   }
 
+  const screenHeight = Dimensions.get('window').height;
+  const screenWidth = Dimensions.get('window').width;
+
   return (
     <SafeAreaView style={styles.container}>
-      {/* Header */}
+      {/* Enhanced Header */}
       <View style={styles.header}>
         <View style={styles.headerContent}>
           <Text style={styles.welcomeText}>Welcome, {userEmail}</Text>
-          <Text style={styles.locationText}>📍 Your Current Location</Text>
+          <Text style={styles.locationText}>📍 Tourist Safety Dashboard</Text>
         </View>
         <TouchableOpacity style={styles.menuButton} onPress={handleSignOut}>
           <Text style={styles.menuButtonText}>⚙️</Text>
         </TouchableOpacity>
       </View>
 
-      {/* Map or Location Info */}
-      {location ? (
-        <View style={styles.mapContainer}>
-          {/* Debug Info */}
-          <View style={styles.debugInfo}>
-            <Text style={styles.debugText}>
-              📍 Location: {location.latitude.toFixed(6)}, {location.longitude.toFixed(6)}
-            </Text>
-            <Text style={styles.debugText}>
-              🗺️ Map Status: Hidden | Platform: {Platform.OS}
-            </Text>
-          </View>
-          
-          {/* MapView hidden - showing location info only */}
-          {false && MapView && Platform.OS !== 'web' ? (
-            <MapView
-              style={styles.map}
-              provider={PROVIDER_GOOGLE}
-              region={location}
-              showsUserLocation={true}
-              showsMyLocationButton={true}
-              showsCompass={true}
-              showsBuildings={true}
-              showsTraffic={true}
-            >
-              {location && (
-                <Marker
-                  coordinate={{
-                    latitude: location!.latitude,
-                    longitude: location!.longitude,
-                  }}
-                  title="Your Location"
-                  description="You are here"
-                  pinColor="#3b82f6"
-                />
-              )}
-            </MapView>
-          ) : (
-            // Location info without map
-            <View style={styles.webMapFallback}>
-              <Text style={styles.mapTitle}>� Your Location</Text>
-              <View style={styles.coordinatesCard}>
-                <Text style={styles.coordinatesTitle}>Current Coordinates:</Text>
-                <Text style={styles.coordinates}>
-                  Latitude: {location.latitude.toFixed(6)}
-                </Text>
-                <Text style={styles.coordinates}>
-                  Longitude: {location.longitude.toFixed(6)}
-                </Text>
+      {/* Main Content with ScrollView for better full-screen experience */}
+      <ScrollView style={styles.scrollContainer} showsVerticalScrollIndicator={false}>
+        {location ? (
+          <View style={styles.mainContent}>
+            {/* Location Status Card */}
+            <View style={styles.statusCard}>
+              <View style={styles.statusHeader}>
+                <Text style={styles.statusTitle}>📍 Current Location</Text>
+                <View style={styles.statusIndicator}>
+                  <View style={styles.statusDot} />
+                  <Text style={styles.statusText}>Active</Text>
+                </View>
               </View>
-              <TouchableOpacity style={styles.openMapButton} onPress={openMapInBrowser}>
-                <Text style={styles.openMapButtonText}>🌍 Open in Google Maps</Text>
+              
+              <View style={styles.coordinatesContainer}>
+                <View style={styles.coordinateRow}>
+                  <Text style={styles.coordinateLabel}>Latitude</Text>
+                  <Text style={styles.coordinateValue}>{location.latitude.toFixed(6)}</Text>
+                </View>
+                <View style={styles.coordinateRow}>
+                  <Text style={styles.coordinateLabel}>Longitude</Text>
+                  <Text style={styles.coordinateValue}>{location.longitude.toFixed(6)}</Text>
+                </View>
+              </View>
+            </View>
+
+            {/* Action Buttons */}
+            <View style={styles.actionButtonsContainer}>
+              <TouchableOpacity style={styles.primaryButton} onPress={openMapInBrowser}>
+                <Text style={styles.primaryButtonText}>🌍 Open in Google Maps</Text>
               </TouchableOpacity>
               
               <TouchableOpacity 
-                style={[styles.shareLocationButton, sharingLocation && styles.disabledButton]} 
+                style={[styles.secondaryButton, sharingLocation && styles.disabledButton]} 
                 onPress={shareCurrentLocation}
                 disabled={sharingLocation}
               >
-                <Text style={styles.shareLocationButtonText}>
-                  {sharingLocation ? '📤 Sharing...' : '📤 Share Location with Everyone'}
+                <Text style={styles.secondaryButtonText}>
+                  {sharingLocation ? '📤 Sharing...' : '📤 Share Location'}
                 </Text>
               </TouchableOpacity>
-              
-              {/* Shared Locations Section */}
-              {sharedLocations.length > 0 && (
-                <View style={styles.sharedLocationsContainer}>
-                  <Text style={styles.sharedLocationsTitle}>🌍 Shared Locations from Other Users</Text>
-                  {sharedLocations.slice(0, 5).map((sharedLoc, index) => (
-                    <View key={index} style={styles.sharedLocationItem}>
-                      <Text style={styles.sharedLocationUser}>👤 {sharedLoc.user_email}</Text>
+            </View>
+            
+            {/* Shared Locations Section */}
+            {sharedLocations.length > 0 && (
+              <View style={styles.sharedLocationsSection}>
+                <View style={styles.sectionHeader}>
+                  <Text style={styles.sectionTitle}>🌍 Shared Locations</Text>
+                  <Text style={styles.sectionSubtitle}>{sharedLocations.length} locations shared</Text>
+                </View>
+                
+                <View style={styles.sharedLocationsList}>
+                  {sharedLocations.slice(0, 10).map((sharedLoc, index) => (
+                    <View key={index} style={styles.sharedLocationCard}>
+                      <View style={styles.sharedLocationHeader}>
+                        <Text style={styles.sharedLocationUser}>👤 {sharedLoc.user_email}</Text>
+                        <Text style={styles.sharedLocationTime}>
+                          {new Date(sharedLoc.shared_at || '').toLocaleDateString()}
+                        </Text>
+                      </View>
                       <Text style={styles.sharedLocationCoords}>
                         📍 {sharedLoc.latitude.toFixed(6)}, {sharedLoc.longitude.toFixed(6)}
-                      </Text>
-                      <Text style={styles.sharedLocationTime}>
-                        🕒 {new Date(sharedLoc.shared_at || '').toLocaleDateString()} {new Date(sharedLoc.shared_at || '').toLocaleTimeString()}
                       </Text>
                       {sharedLoc.message && (
                         <Text style={styles.sharedLocationMessage}>💬 {sharedLoc.message}</Text>
                       )}
                     </View>
                   ))}
-                  {sharedLocations.length > 5 && (
-                    <Text style={styles.moreLocationsText}>
-                      ... and {sharedLocations.length - 5} more shared locations
-                    </Text>
+                  {sharedLocations.length > 10 && (
+                    <View style={styles.moreLocationsCard}>
+                      <Text style={styles.moreLocationsText}>
+                        +{sharedLocations.length - 10} more shared locations
+                      </Text>
+                    </View>
                   )}
                 </View>
-              )}
-            </View>
-          )}
-        </View>
-      ) : (
-        <View style={styles.noLocationContainer}>
-          <Text style={styles.noLocationText}>📍 Waiting for location...</Text>
-          <Text style={styles.debugText}>Permission: {locationPermission ? 'Granted' : 'Not granted'}</Text>
-          <Text style={styles.debugText}>Loading: {loading ? 'Yes' : 'No'}</Text>
-        </View>
-      )}
+              </View>
+            )}
 
-      {/* Bottom Controls */}
+            {/* Debug Info (collapsible) */}
+            <View style={styles.debugSection}>
+              <Text style={styles.debugTitle}>🔧 Debug Information</Text>
+              <View style={styles.debugInfo}>
+                <Text style={styles.debugText}>
+                  Platform: {Platform.OS} | Screen: {screenWidth}x{screenHeight}
+                </Text>
+                <Text style={styles.debugText}>
+                  Permission: {locationPermission ? 'Granted' : 'Not granted'}
+                </Text>
+                <Text style={styles.debugText}>
+                  Shared Locations: {sharedLocations.length}
+                </Text>
+              </View>
+            </View>
+          </View>
+        ) : (
+          <View style={styles.noLocationContainer}>
+            <Text style={styles.noLocationText}>📍 Waiting for location...</Text>
+            <Text style={styles.debugText}>Permission: {locationPermission ? 'Granted' : 'Not granted'}</Text>
+            <Text style={styles.debugText}>Loading: {loading ? 'Yes' : 'No'}</Text>
+          </View>
+        )}
+      </ScrollView>
+
+      {/* Enhanced Bottom Controls */}
       <View style={styles.bottomControls}>
-        <TouchableOpacity style={styles.refreshButton} onPress={handleRefreshLocation}>
-          <Text style={styles.refreshButtonText}>🔄 Refresh Location</Text>
+        <TouchableOpacity style={styles.controlButton} onPress={handleRefreshLocation}>
+          <Text style={styles.controlButtonText}>🔄 Refresh</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.refreshButton} 
+          style={styles.controlButton} 
           onPress={loadSharedLocations}
         >
-          <Text style={styles.refreshButtonText}>🌍 Refresh Shared</Text>
+          <Text style={styles.controlButtonText}>🌍 Shared</Text>
         </TouchableOpacity>
 
         <TouchableOpacity 
-          style={styles.testButton} 
+          style={styles.controlButton} 
           onPress={() => {
             console.log('🧪 Manual test - Current states:');
             console.log('- Permission:', locationPermission);
@@ -393,14 +402,14 @@ export default function MapScreen() {
             Alert.alert('Debug Info', `Permission: ${locationPermission}\nLocation: ${location ? 'Set' : 'Not set'}\nLoading: ${loading}\nShared: ${sharedLocations.length}`);
           }}
         >
-          <Text style={styles.testButtonText}>🧪 Debug</Text>
+          <Text style={styles.controlButtonText}>🧪 Debug</Text>
         </TouchableOpacity>
         
         <TouchableOpacity 
-          style={styles.adminButton} 
+          style={styles.controlButton} 
           onPress={() => router.navigate('/admin-users' as any)}
         >
-          <Text style={styles.adminButtonText}>👥 Admin</Text>
+          <Text style={styles.controlButtonText}>👥 Admin</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -462,7 +471,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    padding: 16,
+    padding: 20,
     backgroundColor: '#ffffff',
     borderBottomWidth: 1,
     borderBottomColor: '#e5e7eb',
@@ -482,7 +491,7 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   welcomeText: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
     color: '#1f2937',
   },
@@ -492,64 +501,248 @@ const styles = StyleSheet.create({
     marginTop: 4,
   },
   menuButton: {
-    padding: 8,
+    padding: 12,
     borderRadius: 8,
     backgroundColor: '#f3f4f6',
   },
   menuButtonText: {
     fontSize: 20,
   },
-  mapContainer: {
+  scrollContainer: {
     flex: 1,
   },
-  map: {
-    flex: 1,
+  mainContent: {
+    padding: 20,
   },
-  webMapFallback: {
+  statusCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 16,
+    padding: 24,
+    marginBottom: 24,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 8,
+      },
+      android: {
+        elevation: 4,
+      },
+    }),
+  },
+  statusHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 20,
+  },
+  statusTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+  },
+  statusIndicator: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
+  statusDot: {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: '#10b981',
+    marginRight: 8,
+  },
+  statusText: {
+    fontSize: 14,
+    color: '#10b981',
+    fontWeight: '600',
+  },
+  coordinatesContainer: {
+    gap: 16,
+  },
+  coordinateRow: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    backgroundColor: '#f9fafb',
+    borderRadius: 8,
+  },
+  coordinateLabel: {
+    fontSize: 16,
+    color: '#6b7280',
+    fontWeight: '500',
+  },
+  coordinateValue: {
+    fontSize: 16,
+    color: '#1f2937',
+    fontFamily: Platform.OS === 'web' ? 'monospace' : 'System',
+    fontWeight: '600',
+  },
+  actionButtonsContainer: {
+    gap: 16,
+    marginBottom: 24,
+  },
+  primaryButton: {
+    backgroundColor: '#10b981',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  primaryButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  secondaryButton: {
+    backgroundColor: '#8b5cf6',
+    paddingVertical: 16,
+    paddingHorizontal: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 2 },
+        shadowOpacity: 0.1,
+        shadowRadius: 4,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
+  },
+  secondaryButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  disabledButton: {
+    backgroundColor: '#9ca3af',
+    opacity: 0.6,
+  },
+  sharedLocationsSection: {
+    marginBottom: 24,
+  },
+  sectionHeader: {
+    marginBottom: 16,
+  },
+  sectionTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    color: '#1f2937',
+    marginBottom: 4,
+  },
+  sectionSubtitle: {
+    fontSize: 14,
+    color: '#6b7280',
+  },
+  sharedLocationsList: {
+    gap: 12,
+  },
+  sharedLocationCard: {
+    backgroundColor: '#ffffff',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.05,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 1,
+      },
+    }),
+  },
+  sharedLocationHeader: {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    marginBottom: 8,
+  },
+  sharedLocationUser: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+  },
+  sharedLocationTime: {
+    fontSize: 12,
+    color: '#9ca3af',
+  },
+  sharedLocationCoords: {
+    fontSize: 13,
+    color: '#6b7280',
+    fontFamily: Platform.OS === 'web' ? 'monospace' : 'System',
+    marginBottom: 4,
+  },
+  sharedLocationMessage: {
+    fontSize: 13,
+    color: '#4b5563',
+    fontStyle: 'italic',
+  },
+  moreLocationsCard: {
+    backgroundColor: '#f3f4f6',
+    borderRadius: 8,
+    padding: 12,
+    alignItems: 'center',
+  },
+  moreLocationsText: {
+    fontSize: 14,
+    color: '#6b7280',
+    fontStyle: 'italic',
+  },
+  debugSection: {
+    backgroundColor: '#f9fafb',
+    borderRadius: 12,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  debugTitle: {
+    fontSize: 16,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 12,
+  },
+  debugInfo: {
+    gap: 4,
+  },
+  debugText: {
+    fontSize: 12,
+    color: '#6b7280',
+    fontFamily: Platform.OS === 'web' ? 'monospace' : 'System',
+  },
+  noLocationContainer: {
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',
     padding: 24,
   },
-  mapTitle: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: '#1f2937',
-    marginBottom: 32,
-  },
-  coordinatesCard: {
-    backgroundColor: '#ffffff',
-    padding: 24,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-    marginBottom: 32,
-    width: '100%',
-    alignItems: 'center',
-  },
-  coordinatesTitle: {
+  noLocationText: {
     fontSize: 18,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 16,
-  },
-  coordinates: {
-    fontSize: 16,
     color: '#6b7280',
-    marginBottom: 8,
-    fontFamily: Platform.OS === 'web' ? 'monospace' : 'System',
-  },
-  openMapButton: {
-    backgroundColor: '#10b981',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-    alignItems: 'center',
-  },
-  openMapButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
+    marginBottom: 16,
+    textAlign: 'center',
   },
   bottomControls: {
     flexDirection: 'row',
@@ -559,41 +752,15 @@ const styles = StyleSheet.create({
     borderTopColor: '#e5e7eb',
     gap: 12,
   },
-  refreshButton: {
+  controlButton: {
     flex: 1,
-    backgroundColor: '#10b981',
+    backgroundColor: '#3b82f6',
     paddingVertical: 12,
     paddingHorizontal: 16,
     borderRadius: 8,
     alignItems: 'center',
   },
-  refreshButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  testButton: {
-    flex: 1,
-    backgroundColor: '#f59e0b',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  testButtonText: {
-    color: '#ffffff',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  adminButton: {
-    flex: 1,
-    backgroundColor: '#6366f1',
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    borderRadius: 8,
-    alignItems: 'center',
-  },
-  adminButtonText: {
+  controlButtonText: {
     color: '#ffffff',
     fontSize: 14,
     fontWeight: '600',
@@ -610,100 +777,5 @@ const styles = StyleSheet.create({
     color: '#ffffff',
     fontSize: 16,
     fontWeight: '600',
-  },
-  debugInfo: {
-    backgroundColor: '#ffffff',
-    padding: 12,
-    margin: 8,
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  debugText: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginBottom: 4,
-    fontFamily: Platform.OS === 'web' ? 'monospace' : 'System',
-  },
-  noLocationContainer: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 24,
-  },
-  noLocationText: {
-    fontSize: 18,
-    color: '#6b7280',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  shareLocationButton: {
-    backgroundColor: '#8b5cf6',
-    paddingVertical: 16,
-    paddingHorizontal: 32,
-    borderRadius: 12,
-    alignItems: 'center',
-    marginTop: 16,
-  },
-  shareLocationButtonText: {
-    color: '#ffffff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  disabledButton: {
-    backgroundColor: '#9ca3af',
-    opacity: 0.6,
-  },
-  sharedLocationsContainer: {
-    backgroundColor: '#ffffff',
-    margin: 16,
-    padding: 16,
-    borderRadius: 12,
-    borderWidth: 1,
-    borderColor: '#e5e7eb',
-  },
-  sharedLocationsTitle: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  sharedLocationItem: {
-    backgroundColor: '#f9fafb',
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 12,
-    borderLeftWidth: 4,
-    borderLeftColor: '#8b5cf6',
-  },
-  sharedLocationUser: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#374151',
-    marginBottom: 4,
-  },
-  sharedLocationCoords: {
-    fontSize: 13,
-    color: '#6b7280',
-    fontFamily: Platform.OS === 'web' ? 'monospace' : 'System',
-    marginBottom: 4,
-  },
-  sharedLocationTime: {
-    fontSize: 12,
-    color: '#9ca3af',
-    marginBottom: 4,
-  },
-  sharedLocationMessage: {
-    fontSize: 13,
-    color: '#4b5563',
-    fontStyle: 'italic',
-  },
-  moreLocationsText: {
-    fontSize: 14,
-    color: '#6b7280',
-    textAlign: 'center',
-    fontStyle: 'italic',
-    marginTop: 8,
   },
 });
