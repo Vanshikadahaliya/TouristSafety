@@ -1,39 +1,40 @@
-import React, { useState } from 'react';
+import { router } from 'expo-router';
+import { useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
   ActivityIndicator,
+  Alert,
   SafeAreaView,
+  StyleSheet,
+  Text,
+  TouchableOpacity,
+  View,
 } from 'react-native';
-import { authService } from '../services/authService';
+import { authService } from '../lib/authService';
 
-const RegistrationScreen = ({ navigation }) => {
+export default function LoginScreen() {
   const [loading, setLoading] = useState(false);
 
-  const handleGoogleSignUp = async () => {
+  const handleGoogleSignIn = async () => {
     setLoading(true);
     try {
-      const { data, error } = await authService.signUpWithGoogle();
+      const { data, error } = await authService.signInWithGoogle();
       
       if (error) {
-        Alert.alert('Registration Failed', error.message);
+        Alert.alert('Login Failed', error.message || 'An error occurred during login');
       } else {
         Alert.alert(
-          'Registration Successful!',
-          'Welcome to Tourist Safety!',
+          'Login Successful!',
+          'Welcome back to Tourist Safety!',
           [
             {
               text: 'OK',
-              onPress: () => navigation.navigate('Success')
+              onPress: () => router.push('/success')
             }
           ]
         );
       }
     } catch (error) {
-      Alert.alert('Error', 'An unexpected error occurred during registration');
+      Alert.alert('Error', 'An unexpected error occurred during login');
     } finally {
       setLoading(false);
     }
@@ -43,16 +44,16 @@ const RegistrationScreen = ({ navigation }) => {
     <SafeAreaView style={styles.container}>
       <View style={styles.content}>
         <View style={styles.header}>
-          <Text style={styles.title}>Welcome to Tourist Safety</Text>
+          <Text style={styles.title}>Welcome Back</Text>
           <Text style={styles.subtitle}>
-            Create your account to get started with safe travel experiences
+            Sign in to continue your safe travel journey
           </Text>
         </View>
 
         <View style={styles.formContainer}>
           <TouchableOpacity
             style={[styles.googleButton, loading && styles.buttonDisabled]}
-            onPress={handleGoogleSignUp}
+            onPress={handleGoogleSignIn}
             disabled={loading}
           >
             {loading ? (
@@ -60,7 +61,7 @@ const RegistrationScreen = ({ navigation }) => {
             ) : (
               <>
                 <Text style={styles.googleButtonText}>📧</Text>
-                <Text style={styles.googleButtonText}>Sign up with Google</Text>
+                <Text style={styles.googleButtonText}>Sign in with Google</Text>
               </>
             )}
           </TouchableOpacity>
@@ -72,11 +73,11 @@ const RegistrationScreen = ({ navigation }) => {
           </View>
 
           <TouchableOpacity
-            style={styles.loginLink}
-            onPress={() => navigation.navigate('Login')}
+            style={styles.registerLink}
+            onPress={() => router.push('/register')}
           >
-            <Text style={styles.loginLinkText}>
-              Already have an account? <Text style={styles.loginLinkBold}>Sign in</Text>
+            <Text style={styles.registerLinkText}>
+              Don't have an account? <Text style={styles.registerLinkBold}>Sign up</Text>
             </Text>
           </TouchableOpacity>
         </View>
@@ -157,18 +158,16 @@ const styles = StyleSheet.create({
     color: '#666',
     fontSize: 14,
   },
-  loginLink: {
+  registerLink: {
     alignItems: 'center',
     paddingVertical: 16,
   },
-  loginLinkText: {
+  registerLinkText: {
     fontSize: 16,
     color: '#666',
   },
-  loginLinkBold: {
+  registerLinkBold: {
     fontWeight: '600',
     color: '#4285f4',
   },
 });
-
-export default RegistrationScreen;

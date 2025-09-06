@@ -1,26 +1,39 @@
 {
   "expo": {
-    "name": "Tourist Safety",
-    "slug": "tourist-safety",
+    "name": "TouristSafety",
+    "slug": "TouristSafety",
     "version": "1.0.0",
     "orientation": "portrait",
-    "userInterfaceStyle": "light",
-    "splash": {
-      "resizeMode": "contain",
-      "backgroundColor": "#ffffff"
-    },
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "icon": "./assets/images/icon.png",
+    "scheme": "touristsafety",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true,
-      "bundleIdentifier": "com.touristsafety.app"
+      "supportsTablet": true
     },
     "android": {
-      "package": "com.touristsafety.app"
+      "adaptiveIcon": {
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#ffffff"
+      },
+      "edgeToEdgeEnabled": true
     },
-    "scheme": "tourist-safety",
+    "web": {
+      "bundler": "metro",
+      "output": "static",
+      "favicon": "./assets/images/favicon.png"
+    },
     "plugins": [
+      "expo-router",
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
       [
         "@react-native-google-signin/google-signin",
         {
@@ -28,6 +41,9 @@
         }
       ]
     ],
+    "experiments": {
+      "typedRoutes": true
+    },
     "extra": {
       "supabaseUrl": "your_supabase_url_here",
       "supabaseAnonKey": "your_supabase_anon_key_here",
