@@ -1,13 +1,13 @@
 import { router } from 'expo-router';
 import { useState } from 'react';
 import {
-  ActivityIndicator,
-  Alert,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
 import { authService } from '../lib/authService';
 
@@ -20,7 +20,7 @@ export default function LoginScreen() {
       const { data, error } = await authService.signInWithGoogle();
       
       if (error) {
-        Alert.alert('Login Failed', error.message || 'An error occurred during login');
+        Alert.alert('Login Failed', (error as any)?.message || 'An error occurred during login');
       } else {
         Alert.alert(
           'Login Successful!',
@@ -84,7 +84,7 @@ export default function LoginScreen() {
       </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
