@@ -1,17 +1,19 @@
-import React, { useState, useEffect } from 'react';
+import type { User } from '@supabase/supabase-js';
+import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
 import {
-  View,
-  Text,
-  StyleSheet,
-  TouchableOpacity,
-  Alert,
-  ActivityIndicator,
-  SafeAreaView,
+    ActivityIndicator,
+    Alert,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from 'react-native';
-import { authService } from '../services/authService';
+import { authService } from '../lib/authService';
 
-const SuccessScreen = ({ navigation }) => {
-  const [user, setUser] = useState(null);
+export default function SuccessScreen() {
+  const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -50,7 +52,7 @@ const SuccessScreen = ({ navigation }) => {
             if (error) {
               Alert.alert('Error', 'Failed to sign out');
             } else {
-              navigation.navigate('Login');
+              router.push('/login');
             }
           },
         },
@@ -241,5 +243,3 @@ const styles = StyleSheet.create({
     fontWeight: '600',
   },
 });
-
-export default SuccessScreen;
