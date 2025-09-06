@@ -117,7 +117,7 @@ export default function SuccessScreen() {
       </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {

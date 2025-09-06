@@ -20,7 +20,7 @@ export default function RegistrationScreen() {
       const { data, error } = await authService.signUpWithGoogle();
       
       if (error) {
-        Alert.alert('Registration Failed', error.message || 'An error occurred during registration');
+        Alert.alert('Registration Failed', (error as any)?.message || 'An error occurred during registration');
       } else {
         Alert.alert(
           'Registration Successful!',
@@ -84,7 +84,7 @@ export default function RegistrationScreen() {
       </View>
     </SafeAreaView>
   );
-};
+}
 
 const styles = StyleSheet.create({
   container: {
