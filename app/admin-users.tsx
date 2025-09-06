@@ -1,15 +1,15 @@
-import React, { useState, useEffect } from 'react';
-import {
-  View,
-  Text,
-  StyleSheet,
-  FlatList,
-  ActivityIndicator,
-  SafeAreaView,
-  TouchableOpacity,
-  Alert
-} from 'react-native';
 import { router } from 'expo-router';
+import { useEffect, useState } from 'react';
+import {
+    ActivityIndicator,
+    Alert,
+    FlatList,
+    SafeAreaView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View
+} from 'react-native';
 import { supabase } from '../lib/supabase';
 
 interface User {
@@ -47,14 +47,14 @@ export default function AdminUsersScreen() {
     }
   };
 
-  const formatDate = (dateString: string) => {
+  const formatDate = (dateString?: string) => {
     if (!dateString) return 'Never';
     return new Date(dateString).toLocaleDateString();
   };
 
   const renderUser = ({ item }: { item: User }) => (
     <View style={styles.userCard}>
-      <Text style={styles.email}>{item.email}</Text>
+      <Text style={styles.email}>{item.email || 'No email'}</Text>
       <Text style={styles.detail}>Registered: {formatDate(item.created_at)}</Text>
       <Text style={styles.detail}>Last Login: {formatDate(item.last_sign_in_at)}</Text>
       <Text style={styles.detail}>
