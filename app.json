@@ -1,0 +1,39 @@
+{
+  "expo": {
+    "name": "Tourist Safety",
+    "slug": "tourist-safety",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#ffffff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.touristsafety.app"
+    },
+    "android": {
+      "package": "com.touristsafety.app"
+    },
+    "scheme": "tourist-safety",
+    "plugins": [
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.YOUR_GOOGLE_CLIENT_ID"
+        }
+      ]
+    ],
+    "extra": {
+      "supabaseUrl": "your_supabase_url_here",
+      "supabaseAnonKey": "your_supabase_anon_key_here",
+      "googleWebClientId": "your_google_client_id_here",
+      "googleIosClientId": "your_google_client_id_ios_here",
+      "googleAndroidClientId": "your_google_client_id_android_here"
+    }
+  }
+}
