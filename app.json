@@ -9,14 +9,22 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "infoPlist": {
+        "NSLocationWhenInUseUsageDescription": "Tourist Safety uses your location to provide safety information and show your position on the map.",
+        "NSLocationAlwaysAndWhenInUseUsageDescription": "Tourist Safety uses your location to provide safety information and show your position on the map."
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "permissions": [
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION"
+      ]
     },
     "web": {
       "bundler": "metro",
@@ -25,6 +33,7 @@
     },
     "plugins": [
       "expo-router",
+      "expo-location",
       [
         "expo-splash-screen",
         {
@@ -32,12 +41,6 @@
           "imageWidth": 200,
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
-        }
-      ],
-      [
-        "@react-native-google-signin/google-signin",
-        {
-          "iosUrlScheme": "com.googleusercontent.apps.YOUR_GOOGLE_CLIENT_ID"
         }
       ]
     ],
@@ -47,6 +50,7 @@
     "extra": {
   "supabaseUrl": "https://jqedshcbebcbyldefrab.supabase.co",
   "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxZWRzaGNiZWJjYnlsZGVmcmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxNDE4MjUsImV4cCI6MjA3MjcxNzgyNX0.3j6lwK9NW_vAXSQ080Zd29gxxWAPyUC3I0W9enLnQ_4",
+  "googleClientId": "109858282882-fc334ksr9d0uhn3stakqlrt9kdh2cptv.apps.googleusercontent.com",
   "googleWebClientId": "109858282882-fc334ksr9d0uhn3stakqlrt9kdh2cptv.apps.googleusercontent.com",
   "googleAndroidClientId": "109858282882-6igqmso2ms535ue5j0hhp53bvcvdbeaj.apps.googleusercontent.com"
 }
