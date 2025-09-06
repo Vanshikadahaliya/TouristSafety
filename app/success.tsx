@@ -12,6 +12,7 @@ import {
   View,
 } from 'react-native';
 import { authService } from '../lib/authService';
+import { locationSharingService, SharedLocation } from '../lib/locationSharingService';
 
 // Conditional import for React Native Maps (not available on web)
 let MapView: any = null;
@@ -41,6 +42,8 @@ export default function MapScreen() {
   const [loading, setLoading] = useState(true);
   const [userEmail, setUserEmail] = useState<string>('');
   const [locationPermission, setLocationPermission] = useState(false);
+  const [sharedLocations, setSharedLocations] = useState<SharedLocation[]>([]);
+  const [sharingLocation, setSharingLocation] = useState(false);
 
   useEffect(() => {
     initializeScreen();
@@ -55,6 +58,9 @@ export default function MapScreen() {
 
     // Request location permission
     await requestLocationPermission();
+    
+    // Load shared locations
+    await loadSharedLocations();
   };
 
   const requestLocationPermission = async () => {
@@ -122,6 +128,59 @@ export default function MapScreen() {
     } finally {
       setLoading(false);
     }
+  };
+
+  const loadSharedLocations = async () => {
+    try {
+      const result = await locationSharingService.getSharedLocations();
+      if (result.success && result.data) {
+        setSharedLocations(result.data);
+      } else {
+        console.error('Failed to load shared locations:', result.error);
+      }
+    } catch (error) {
+      console.error('Error loading shared locations:', error);
+    }
+  };
+
+  const shareCurrentLocation = async () => {
+    if (!location || !userEmail) {
+      Alert.alert('Error', 'Location or user information not available');
+      return;
+    }
+
+    Alert.alert(
+      'Share Location',
+      'Do you want to share your current location with all users?',
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Share',
+          onPress: async () => {
+            setSharingLocation(true);
+            try {
+              const result = await locationSharingService.shareLocation(
+                userEmail,
+                location.latitude,
+                location.longitude,
+                'Current location shared'
+              );
+
+              if (result.success) {
+                Alert.alert('Success', 'Your location has been shared with all users!');
+                await loadSharedLocations(); // Refresh the shared locations
+              } else {
+                Alert.alert('Error', result.error || 'Failed to share location');
+              }
+            } catch (error) {
+              Alert.alert('Error', 'Failed to share location');
+            } finally {
+              setSharingLocation(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   const handleSignOut = async () => {
@@ -235,15 +294,17 @@ export default function MapScreen() {
               showsBuildings={true}
               showsTraffic={true}
             >
-              <Marker
-                coordinate={{
-                  latitude: location.latitude,
-                  longitude: location.longitude,
-                }}
-                title="Your Location"
-                description="You are here"
-                pinColor="#3b82f6"
-              />
+              {location && (
+                <Marker
+                  coordinate={{
+                    latitude: location!.latitude,
+                    longitude: location!.longitude,
+                  }}
+                  title="Your Location"
+                  description="You are here"
+                  pinColor="#3b82f6"
+                />
+              )}
             </MapView>
           ) : (
             // Location info without map
@@ -261,6 +322,42 @@ export default function MapScreen() {
               <TouchableOpacity style={styles.openMapButton} onPress={openMapInBrowser}>
                 <Text style={styles.openMapButtonText}>🌍 Open in Google Maps</Text>
               </TouchableOpacity>
+              
+              <TouchableOpacity 
+                style={[styles.shareLocationButton, sharingLocation && styles.disabledButton]} 
+                onPress={shareCurrentLocation}
+                disabled={sharingLocation}
+              >
+                <Text style={styles.shareLocationButtonText}>
+                  {sharingLocation ? '📤 Sharing...' : '📤 Share Location with Everyone'}
+                </Text>
+              </TouchableOpacity>
+              
+              {/* Shared Locations Section */}
+              {sharedLocations.length > 0 && (
+                <View style={styles.sharedLocationsContainer}>
+                  <Text style={styles.sharedLocationsTitle}>🌍 Shared Locations from Other Users</Text>
+                  {sharedLocations.slice(0, 5).map((sharedLoc, index) => (
+                    <View key={index} style={styles.sharedLocationItem}>
+                      <Text style={styles.sharedLocationUser}>👤 {sharedLoc.user_email}</Text>
+                      <Text style={styles.sharedLocationCoords}>
+                        📍 {sharedLoc.latitude.toFixed(6)}, {sharedLoc.longitude.toFixed(6)}
+                      </Text>
+                      <Text style={styles.sharedLocationTime}>
+                        🕒 {new Date(sharedLoc.shared_at || '').toLocaleDateString()} {new Date(sharedLoc.shared_at || '').toLocaleTimeString()}
+                      </Text>
+                      {sharedLoc.message && (
+                        <Text style={styles.sharedLocationMessage}>💬 {sharedLoc.message}</Text>
+                      )}
+                    </View>
+                  ))}
+                  {sharedLocations.length > 5 && (
+                    <Text style={styles.moreLocationsText}>
+                      ... and {sharedLocations.length - 5} more shared locations
+                    </Text>
+                  )}
+                </View>
+              )}
             </View>
           )}
         </View>
@@ -279,13 +376,21 @@ export default function MapScreen() {
         </TouchableOpacity>
 
         <TouchableOpacity 
+          style={styles.refreshButton} 
+          onPress={loadSharedLocations}
+        >
+          <Text style={styles.refreshButtonText}>🌍 Refresh Shared</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity 
           style={styles.testButton} 
           onPress={() => {
             console.log('🧪 Manual test - Current states:');
             console.log('- Permission:', locationPermission);
             console.log('- Location:', location);
             console.log('- Loading:', loading);
-            Alert.alert('Debug Info', `Permission: ${locationPermission}\nLocation: ${location ? 'Set' : 'Not set'}\nLoading: ${loading}`);
+            console.log('- Shared locations:', sharedLocations.length);
+            Alert.alert('Debug Info', `Permission: ${locationPermission}\nLocation: ${location ? 'Set' : 'Not set'}\nLoading: ${loading}\nShared: ${sharedLocations.length}`);
           }}
         >
           <Text style={styles.testButtonText}>🧪 Debug</Text>
@@ -295,7 +400,7 @@ export default function MapScreen() {
           style={styles.adminButton} 
           onPress={() => router.navigate('/admin-users' as any)}
         >
-          <Text style={styles.adminButtonText}>👥 Admin Panel</Text>
+          <Text style={styles.adminButtonText}>👥 Admin</Text>
         </TouchableOpacity>
       </View>
     </SafeAreaView>
@@ -531,5 +636,74 @@ const styles = StyleSheet.create({
     color: '#6b7280',
     marginBottom: 16,
     textAlign: 'center',
+  },
+  shareLocationButton: {
+    backgroundColor: '#8b5cf6',
+    paddingVertical: 16,
+    paddingHorizontal: 32,
+    borderRadius: 12,
+    alignItems: 'center',
+    marginTop: 16,
+  },
+  shareLocationButtonText: {
+    color: '#ffffff',
+    fontSize: 16,
+    fontWeight: '600',
+  },
+  disabledButton: {
+    backgroundColor: '#9ca3af',
+    opacity: 0.6,
+  },
+  sharedLocationsContainer: {
+    backgroundColor: '#ffffff',
+    margin: 16,
+    padding: 16,
+    borderRadius: 12,
+    borderWidth: 1,
+    borderColor: '#e5e7eb',
+  },
+  sharedLocationsTitle: {
+    fontSize: 18,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 16,
+    textAlign: 'center',
+  },
+  sharedLocationItem: {
+    backgroundColor: '#f9fafb',
+    padding: 12,
+    borderRadius: 8,
+    marginBottom: 12,
+    borderLeftWidth: 4,
+    borderLeftColor: '#8b5cf6',
+  },
+  sharedLocationUser: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#374151',
+    marginBottom: 4,
+  },
+  sharedLocationCoords: {
+    fontSize: 13,
+    color: '#6b7280',
+    fontFamily: Platform.OS === 'web' ? 'monospace' : 'System',
+    marginBottom: 4,
+  },
+  sharedLocationTime: {
+    fontSize: 12,
+    color: '#9ca3af',
+    marginBottom: 4,
+  },
+  sharedLocationMessage: {
+    fontSize: 13,
+    color: '#4b5563',
+    fontStyle: 'italic',
+  },
+  moreLocationsText: {
+    fontSize: 14,
+    color: '#6b7280',
+    textAlign: 'center',
+    fontStyle: 'italic',
+    marginTop: 8,
   },
 });
