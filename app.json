@@ -5,8 +5,6 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/images/icon.png",
-    "scheme": "touristsafety",
-    "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
       "supportsTablet": true
@@ -16,7 +14,8 @@
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
-      "edgeToEdgeEnabled": true
+      "edgeToEdgeEnabled": true,
+      "package": "com.touristsafety.app"
     },
     "web": {
       "bundler": "metro",
@@ -35,15 +34,13 @@
         }
       ],
       [
-        "@react-native-google-signin/google-signin",
-        {
-          "iosUrlScheme": "com.googleusercontent.apps.YOUR_GOOGLE_CLIENT_ID"
-        }
+        "@react-native-google-signin/google-signin"
       ]
     ],
     "experiments": {
       "typedRoutes": true
     },
+    "scheme": "tourist-safety",
     "extra": {
   "supabaseUrl": "https://jqedshcbebcbyldefrab.supabase.co",
   "supabaseAnonKey": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImpxZWRzaGNiZWJjYnlsZGVmcmFiIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTcxNDE4MjUsImV4cCI6MjA3MjcxNzgyNX0.3j6lwK9NW_vAXSQ080Zd29gxxWAPyUC3I0W9enLnQ_4",

@@ -39,11 +39,15 @@ bun install
 
 1. Go to [Google Cloud Console](https://console.cloud.google.com)
 2. Create a new project or select existing one
-3. Enable Google+ API
+3. Enable Google+ API and Google Identity API
 4. Create OAuth 2.0 credentials:
-   - For Web: Add your domain
-   - For iOS: Add your bundle identifier
-   - For Android: Add your package name and SHA-1 fingerprint
+   - **Web Application**: 
+     - Add authorized redirect URIs: `https://auth.expo.io/@your-expo-username/your-app-slug`
+     - Copy the Client ID
+   - **Android Application**:
+     - Add your package name: `com.touristsafety.app`
+     - Add SHA-1 fingerprint (get from: `keytool -list -v -keystore ~/.android/debug.keystore -alias androiddebugkey -storepass android -keypass android`)
+     - Copy the Client ID
 
 ### 4. Environment Configuration
 
